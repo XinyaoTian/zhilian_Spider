@@ -8,6 +8,7 @@ import logging
 logging.basicConfig(level = logging.INFO)
 
 from zhilian_Spider.items import OverviewItem
+from zhilian_Spider.items import JobInfoItem
 
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.conf import settings
@@ -36,7 +37,7 @@ class OverviewSpider(CrawlSpider):
 
     meta = {
         'dont_redirect':True,
-        'handle_httpstatus_list': [301, 302]
+        'handle_httpstatus_list': [301, 302],
     }
 
     allowed_domains = ["zhaopin.com"]
@@ -74,12 +75,16 @@ class OverviewSpider(CrawlSpider):
             # cur_url = response.urljoin(part_url)
             cur_url = response.url
             url_striped = re.split('&p=\d+',cur_url) # 利用正则匹配掉
-            if len(url_striped) > 1:
-                url_to_request = url_striped[0] + part_url + url_striped[1]
             if len(url_striped) == 1:
                 url_to_request = url_striped[0] + part_url
+            elif len(url_striped) > 1:
+                url_to_request = url_striped[0] + part_url + url_striped[1]
+            else :
+                url_to_request = None
+                logging.DEBUG("Cannot request next url!  Current url = " + str(cur_url))
             # logging.info("status : " + str(response.status))
             # logging.info("headers : " + str(response.headers))
+            logging.info("Current page(" + str(part_url) + ") : " + str(cur_page) + "/" + str(full_page))
             yield scrapy.Request(url_to_request,callback=self.parse_job_info,method= 'GET',headers = self.headers ,
                                  meta=self.meta, cookies=self.cookie, encoding='utf-8')
             cur_page += 1
@@ -87,15 +92,46 @@ class OverviewSpider(CrawlSpider):
     def parse_job_info(self,response):
         # logging.info("New page")
         for item in response.xpath('//table[@class="newlist"]'):
+
+            # meta_job = {
+            #     'dont_redirect': True,
+            #     'handle_httpstatus_list': [301, 302],
+            #     'feedback_rate': None  # 这个变量是用来传递上一个页面中的信息的
+            # }
+
             infoItem = OverviewItem()
             infoItem['job_name'] = item.xpath('.//td[1]/div[1]/a[1]/text()').extract_first()
             infoItem['job_url'] = item.xpath('.//td[1]/div[1]/a[1]/@href').extract_first()
+            
+            logging.info("url_type: " + str(type(infoItem['job_url'])) + "  url: " + str(infoItem['job_url']))
             infoItem['feedback_rate'] = item.xpath('.//td[2]/span[1]/text()').extract_first()
+
+            # meta_job['feedback_rate'] = infoItem['feedback_rate']
             infoItem['company_name'] = item.xpath('.//td[3]/a[1]/text()').extract_first()
             infoItem['salary'] = item.xpath('.//td[4]/text()').extract_first()
             infoItem['work_position'] = item.xpath('.//td[5]/text()').extract_first()
             infoItem['work_position'] = item.xpath('.//td[6]/span[1]/text()').extract_first()
 
             yield infoItem
+
+            # yield scrapy.Request(str(infoItem['job_url']),callback=self.parse_specific_info,method= 'GET',headers = self.headers ,
+            #                      meta=self.meta, cookies=self.cookie, encoding='utf-8')
+
+    def parse_specific_info(self,response):
+        infoItem = JobInfoItem()
+        infoItem['job_name'] = response.xpath('/html/body/div[5]/div[1]/div[1]/h1/text()').extract_first()
+        # infoItem['feedback_rate'] = response.meta['feedback_rate']
+        for item in response.xpath('//div[@class="terminalpage clearfix"]'):
+            infoItem['job_url'] = response.url
+            # To Do: add xpath().extract_first()
+            infoItem['salary'] = item.xpath('.//div[1]/ul[1]/li[1]/strong/text()').extract_first()
+            infoItem['work_positon'] = item.xpath('.//div[1]/ul[1]/li[2]/strong/a/text()').extract_first()
+            infoItem['publish_date'] = item.xpath('.//div[1]/ul[1]/li[3]/strong/span/text()').extract_first()
+            infoItem['job_nature'] = item.xpath('.//div[1]/ul[1]/li[4]/span/text()').extract_first()
+            infoItem['work_experience'] = item.xpath('.//div[1]/ul[1]/li[5]/strong/text()').extract_first()
+
+            yield infoItem
+
+        pass
 
     pass

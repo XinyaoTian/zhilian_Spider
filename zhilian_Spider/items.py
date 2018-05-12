@@ -19,3 +19,25 @@ class OverviewItem(scrapy.Item):
     work_position = scrapy.Field() # 工作地点
     publish_date = scrapy.Field() # 发布日期
     pass
+
+class JobInfoItem(scrapy.Item):
+    job_url = scrapy.Field()  # 网页链接
+    job_name = scrapy.Field() # 职位名称
+
+    salary = scrapy.Field()  # 薪资
+    publish_date = scrapy.Field()  # 发布日期
+    work_experience = scrapy.Field() # 工作经验
+    demand_number = scrapy.Field() # 招聘人数
+    work_position = scrapy.Field()  # 工作地点
+    job_nature = scrapy.Field() # 工作性质(全职？兼职？)
+    education_degree = scrapy.Field() # 学历要求
+    job_category = scrapy.Field() # 职业类别
+
+    company_name = scrapy.Field() # 公司名称
+    company_nature = scrapy.Field() # 公司性质
+    company_industrial = scrapy.Field() # 公司行业
+    company_webpage = scrapy.Field() # 公司主页
+    company_address = scrapy.Field() # 公司地址
+
+    feedback_rate = scrapy.Field() # 简历反馈率
+    pass
