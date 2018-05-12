@@ -43,7 +43,7 @@ class OverviewSpider(CrawlSpider):
     allowed_domains = ["zhaopin.com"]
 
     start_urls = [
-        'http://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC&kw=hadoop&sm=0&fl=530&isadv=0&ispts=1&isfilter=1&p=1&bj=200500&sj=055'
+        "http://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E5%A4%A9%E6%B4%A5&kw=%E6%95%B0%E6%8D%AE&p=1&isadv=0"
     ]
 
     cookie = settings['COOKIE']
@@ -100,22 +100,24 @@ class OverviewSpider(CrawlSpider):
             # }
 
             infoItem = OverviewItem()
-            infoItem['job_name'] = item.xpath('.//td[1]/div[1]/a[1]/text()').extract_first()
-            infoItem['job_url'] = item.xpath('.//td[1]/div[1]/a[1]/@href').extract_first()
-            
-            logging.info("url_type: " + str(type(infoItem['job_url'])) + "  url: " + str(infoItem['job_url']))
+            # infoItem['job_name'] = item.xpath('.//td[1]/div[1]/a[1]/text()').extract_first()
+            job_url = item.xpath('.//td[1]/div[1]/a[1]/@href').extract_first()
+            infoItem['job_url'] = job_url
+            job_url = str(job_url)
+
+            logging.info("url_type: " + str(type(job_url)) + "  url: " + str(infoItem['job_url']))
             infoItem['feedback_rate'] = item.xpath('.//td[2]/span[1]/text()').extract_first()
 
-            # meta_job['feedback_rate'] = infoItem['feedback_rate']
-            infoItem['company_name'] = item.xpath('.//td[3]/a[1]/text()').extract_first()
-            infoItem['salary'] = item.xpath('.//td[4]/text()').extract_first()
-            infoItem['work_position'] = item.xpath('.//td[5]/text()').extract_first()
-            infoItem['work_position'] = item.xpath('.//td[6]/span[1]/text()').extract_first()
+            # # meta_job['feedback_rate'] = infoItem['feedback_rate']
+            # infoItem['company_name'] = item.xpath('.//td[3]/a[1]/text()').extract_first()
+            # infoItem['salary'] = item.xpath('.//td[4]/text()').extract_first()
+            # infoItem['work_position'] = item.xpath('.//td[5]/text()').extract_first()
+            # infoItem['work_position'] = item.xpath('.//td[6]/span[1]/text()').extract_first()
 
             yield infoItem
 
-            # yield scrapy.Request(str(infoItem['job_url']),callback=self.parse_specific_info,method= 'GET',headers = self.headers ,
-            #                      meta=self.meta, cookies=self.cookie, encoding='utf-8')
+            # yield scrapy.Request(url=str(job_url),callback=self.parse_specific_info,method= 'GET',headers = self.headers ,
+            #                     meta=self.meta, cookies=self.cookie, encoding='utf-8')
 
     def parse_specific_info(self,response):
         infoItem = JobInfoItem()
