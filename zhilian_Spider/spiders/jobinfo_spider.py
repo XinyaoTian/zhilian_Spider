@@ -35,7 +35,7 @@ class JobinfoSpider(CrawlSpider):
         "Host": "sou.zhaopin.com",
         # "Referer":" http: // bj.lianjia.com /?utm_source = baidu & utm_medium = pinzhuan & utm_term = biaoti & utm_content = biaotimiaoshu & utm_campaign = sousuo & ljref = pc_sem_baidu_ppzq_x",
         "Upgrade-Insecure-Requests":"1",
-        "User - Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36"
+        # "User - Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36"
     }
 
     meta = {
@@ -52,10 +52,10 @@ class JobinfoSpider(CrawlSpider):
     cookie = settings['COOKIE']
 
     # 设置发起请求的各项参数。为避免重复爬取起始页，如注释掉这个函数，转而用parse方法发起首次请求。
-    def start_requests(self):
-        for href in self.start_urls:
-            yield scrapy.Request(url=href , callback=self.parse ,method= 'GET',headers = self.headers ,
-                                 meta=self.meta, cookies=self.cookie, encoding='utf-8')
+    # def start_requests(self):
+    #     for href in self.start_urls:
+    #         yield scrapy.Request(url=href , callback=self.parse ,method= 'GET',headers = self.headers ,
+    #                              meta=self.meta, cookies=self.cookie, encoding='utf-8')
 
     def parse(self,response):
         print response
@@ -66,7 +66,7 @@ class JobinfoSpider(CrawlSpider):
             infoItem['job_url'] = response.url
             # To Do: add xpath().extract_first()
             infoItem['salary'] = item.xpath('.//div[1]/ul[1]/li[1]/strong/text()').extract_first()
-            infoItem['work_positon'] = item.xpath('.//div[1]/ul[1]/li[2]/strong/a/text()').extract_first()
+            infoItem['work_position'] = item.xpath('.//div[1]/ul[1]/li[2]/strong/a/text()').extract_first()
             infoItem['publish_date'] = item.xpath('.//div[1]/ul[1]/li[3]/strong/span/text()').extract_first()
             infoItem['job_nature'] = item.xpath('.//div[1]/ul[1]/li[4]/span/text()').extract_first()
             infoItem['work_experience'] = item.xpath('.//div[1]/ul[1]/li[5]/strong/text()').extract_first()

@@ -35,6 +35,7 @@ class JobInfoItem(scrapy.Item):
     job_category = scrapy.Field() # 职业类别
 
     company_name = scrapy.Field() # 公司名称
+    company_scale = scrapy.Field() # 公司规模
     company_nature = scrapy.Field() # 公司性质
     company_industrial = scrapy.Field() # 公司行业
     company_webpage = scrapy.Field() # 公司主页

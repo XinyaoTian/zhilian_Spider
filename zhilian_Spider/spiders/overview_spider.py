@@ -22,7 +22,7 @@ class OverviewSpider(CrawlSpider):
 
     custom_settings = {
         'ITEM_PIPELINES':{
-            'zhilian_Spider.pipelines.overview_JsonWithEncodingPipeline':300
+            'zhilian_Spider.pipelines.jobInfo_JsonWithEncodingPipeline':300
         }
     }
 
@@ -46,8 +46,7 @@ class OverviewSpider(CrawlSpider):
     allowed_domains = ["zhaopin.com"]
 
     start_urls = [
-        "https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E5%A4%A9%E6%B4%A5&kw=%E6%95%B0%E6%8D%AE&isadv=0&ispts=1&isfilter=1&p=1"
-
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?bj=160000&sj=2041&jl=%E5%8C%97%E4%BA%AC&kw=hadoop&p=1&isadv=0'
     ]
 
     cookie = settings['COOKIE']
@@ -104,11 +103,11 @@ class OverviewSpider(CrawlSpider):
         # logging.info("New page")
         for item in response.xpath('//table[@class="newlist"]'):
 
-            # meta_job = {
-            #     'dont_redirect': True,
-            #     'handle_httpstatus_list': [301, 302],
-            #     'feedback_rate': None  # 这个变量是用来传递上一个页面中的信息的
-            # }
+            meta_job = {
+                'dont_redirect': True,
+                'handle_httpstatus_list': [301, 302],
+                'feedback_rate': None  # 这个变量是用来传递上一个页面中的信息的
+            }
 
             infoItem = OverviewItem()
             infoItem['job_name'] = item.xpath('.//td[1]/div[1]/a[1]/text()').extract_first()
@@ -118,33 +117,52 @@ class OverviewSpider(CrawlSpider):
             # 这里一定要使用urljoin函数，不然是爬不到相应的url的
             job_url = urljoin(response.url,job_url)
 
-            logging.info("url_type: " + str(type(job_url)) + "  url: " + str(job_url))
+            # logging.info("url_type: " + str(type(job_url)) + "  url: " + str(job_url))
             infoItem['feedback_rate'] = item.xpath('.//td[2]/span[1]/text()').extract_first()
 
-            # # meta_job['feedback_rate'] = infoItem['feedback_rate']
-            infoItem['company_name'] = item.xpath('.//td[3]/a[1]/text()').extract_first()
-            infoItem['salary'] = item.xpath('.//td[4]/text()').extract_first()
-            infoItem['work_position'] = item.xpath('.//td[5]/text()').extract_first()
-            infoItem['work_position'] = item.xpath('.//td[6]/span[1]/text()').extract_first()
-            infoItem['current_page'] = response.meta['current_page_num']
+            meta_job['feedback_rate'] = infoItem['feedback_rate']
+            # infoItem['company_name'] = item.xpath('.//td[3]/a[1]/text()').extract_first()
+            # infoItem['salary'] = item.xpath('.//td[4]/text()').extract_first()
+            # infoItem['work_position'] = item.xpath('.//td[5]/text()').extract_first()
+            # infoItem['work_position'] = item.xpath('.//td[6]/span[1]/text()').extract_first()
+            # infoItem['current_page'] = response.meta['current_page_num']
 
-            yield infoItem
+            # yield infoItem
 
-            # yield scrapy.Request(url=job_url,callback=self.parse_specific_info,method= 'GET',headers = self.headers ,
-            #                     meta=self.meta, cookies=self.cookie, encoding='utf-8')
+            yield scrapy.Request(url=job_url,callback=self.parse_specific_info,meta=meta_job)
 
     def parse_specific_info(self,response):
         infoItem = JobInfoItem()
+        # 职业名称信息
         infoItem['job_name'] = response.xpath('/html/body/div[5]/div[1]/div[1]/h1/text()').extract_first()
         # infoItem['feedback_rate'] = response.meta['feedback_rate']
         for item in response.xpath('//div[@class="terminalpage clearfix"]'):
+
+            #url信息
             infoItem['job_url'] = response.url
             # To Do: add xpath().extract_first()
+
+            # 职位信息
             infoItem['salary'] = item.xpath('.//div[1]/ul[1]/li[1]/strong/text()').extract_first()
-            infoItem['work_positon'] = item.xpath('.//div[1]/ul[1]/li[2]/strong/a/text()').extract_first()
+            infoItem['work_position'] = item.xpath('.//div[1]/ul[1]/li[2]/strong/a/text()').extract_first()
             infoItem['publish_date'] = item.xpath('.//div[1]/ul[1]/li[3]/strong/span/text()').extract_first()
-            infoItem['job_nature'] = item.xpath('.//div[1]/ul[1]/li[4]/span/text()').extract_first()
+            infoItem['job_nature'] = item.xpath('.//div[1]/ul[1]/li[4]/strong/text()').extract_first()
             infoItem['work_experience'] = item.xpath('.//div[1]/ul[1]/li[5]/strong/text()').extract_first()
+            infoItem['education_degree'] = item.xpath('.//div[1]/ul[1]/li[6]/strong/text()').extract_first()
+            infoItem['demand_number'] = item.xpath('.//div[1]/ul[1]/li[7]/strong/text()').extract_first()
+            infoItem['job_category'] = item.xpath('.//div[1]/ul[1]/li[8]/strong/a/text()').extract_first()
+
+            #公司信息
+            infoItem['company_name'] = item.xpath('.//div[@class="company-box"]/p[@class="company-name-t"]/a/text()').extract_first()
+
+            infoItem['company_scale'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[1]/strong/text()').extract_first()
+            infoItem['company_nature'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[2]/strong/text()').extract_first()
+            infoItem['company_industrial'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[3]/strong/a/text()').extract_first()
+            infoItem['company_webpage'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[4]/strong/a/@href').extract_first()
+            infoItem['company_address'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[5]/strong/text()').extract_first()
+
+            infoItem['feedback_rate'] = response.meta['feedback_rate']
+
 
             yield infoItem
 
