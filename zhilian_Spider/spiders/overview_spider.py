@@ -4,6 +4,8 @@ import scrapy
 # 导入正则模块用于匹配 url 和 xpath
 import re
 
+import time
+
 import logging
 logging.basicConfig(level = logging.INFO)
 
@@ -12,6 +14,7 @@ from zhilian_Spider.items import JobInfoItem
 
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.conf import settings
+from urlparse import urljoin
 
 class OverviewSpider(CrawlSpider):
 
@@ -43,7 +46,8 @@ class OverviewSpider(CrawlSpider):
     allowed_domains = ["zhaopin.com"]
 
     start_urls = [
-        "http://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E5%A4%A9%E6%B4%A5&kw=%E6%95%B0%E6%8D%AE&p=1&isadv=0"
+        "https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E5%A4%A9%E6%B4%A5&kw=%E6%95%B0%E6%8D%AE&isadv=0&ispts=1&isfilter=1&p=1"
+
     ]
 
     cookie = settings['COOKIE']
@@ -56,6 +60,12 @@ class OverviewSpider(CrawlSpider):
 
     # 此函数用于发起请求计算总页数并翻页
     def parse(self,response):
+        meta = {
+            'dont_redirect': True,
+            'handle_httpstatus_list': [301, 302],
+            'current_page_num': None
+        }
+
         # 这里需要计算出该求职信息共有多少页，便于爬虫的翻页
         jobs_per_page = len(response.xpath('//table[@class="newlist"]'))
         jobs_total = int(response.xpath('/html/body/div[3]/div[3]/div[2]/span[1]/em/text()').extract_first())
@@ -84,9 +94,10 @@ class OverviewSpider(CrawlSpider):
                 logging.DEBUG("Cannot request next url!  Current url = " + str(cur_url))
             # logging.info("status : " + str(response.status))
             # logging.info("headers : " + str(response.headers))
-            logging.info("Current page(" + str(part_url) + ") : " + str(cur_page) + "/" + str(full_page))
+            # logging.info("Current page(" + str(part_url) + ") : " + str(cur_page) + "/" + str(full_page))
+            meta['current_page_num'] = part_url
             yield scrapy.Request(url_to_request,callback=self.parse_job_info,method= 'GET',headers = self.headers ,
-                                 meta=self.meta, cookies=self.cookie, encoding='utf-8')
+                                 meta=meta, cookies=self.cookie, encoding='utf-8')
             cur_page += 1
 
     def parse_job_info(self,response):
@@ -100,23 +111,26 @@ class OverviewSpider(CrawlSpider):
             # }
 
             infoItem = OverviewItem()
-            # infoItem['job_name'] = item.xpath('.//td[1]/div[1]/a[1]/text()').extract_first()
+            infoItem['job_name'] = item.xpath('.//td[1]/div[1]/a[1]/text()').extract_first()
             job_url = item.xpath('.//td[1]/div[1]/a[1]/@href').extract_first()
             infoItem['job_url'] = job_url
             job_url = str(job_url)
+            # 这里一定要使用urljoin函数，不然是爬不到相应的url的
+            job_url = urljoin(response.url,job_url)
 
-            logging.info("url_type: " + str(type(job_url)) + "  url: " + str(infoItem['job_url']))
+            logging.info("url_type: " + str(type(job_url)) + "  url: " + str(job_url))
             infoItem['feedback_rate'] = item.xpath('.//td[2]/span[1]/text()').extract_first()
 
             # # meta_job['feedback_rate'] = infoItem['feedback_rate']
-            # infoItem['company_name'] = item.xpath('.//td[3]/a[1]/text()').extract_first()
-            # infoItem['salary'] = item.xpath('.//td[4]/text()').extract_first()
-            # infoItem['work_position'] = item.xpath('.//td[5]/text()').extract_first()
-            # infoItem['work_position'] = item.xpath('.//td[6]/span[1]/text()').extract_first()
+            infoItem['company_name'] = item.xpath('.//td[3]/a[1]/text()').extract_first()
+            infoItem['salary'] = item.xpath('.//td[4]/text()').extract_first()
+            infoItem['work_position'] = item.xpath('.//td[5]/text()').extract_first()
+            infoItem['work_position'] = item.xpath('.//td[6]/span[1]/text()').extract_first()
+            infoItem['current_page'] = response.meta['current_page_num']
 
             yield infoItem
 
-            # yield scrapy.Request(url=str(job_url),callback=self.parse_specific_info,method= 'GET',headers = self.headers ,
+            # yield scrapy.Request(url=job_url,callback=self.parse_specific_info,method= 'GET',headers = self.headers ,
             #                     meta=self.meta, cookies=self.cookie, encoding='utf-8')
 
     def parse_specific_info(self,response):

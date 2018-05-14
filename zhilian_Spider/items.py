@@ -11,13 +11,14 @@ import scrapy
 class OverviewItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    # job_name = scrapy.Field() # 职位名称
+    job_name = scrapy.Field() # 职位名称
     job_url = scrapy.Field() # 详细信息链接
     feedback_rate = scrapy.Field() # 简历反馈率
-    # company_name = scrapy.Field() # 公司名称
-    # salary = scrapy.Field() # 薪资
-    # work_position = scrapy.Field() # 工作地点
-    # publish_date = scrapy.Field() # 发布日期
+    company_name = scrapy.Field() # 公司名称
+    salary = scrapy.Field() # 薪资
+    work_position = scrapy.Field() # 工作地点
+    publish_date = scrapy.Field() # 发布日期
+    current_page = scrapy.Field() # 爬取的当前页数
     pass
 
 class JobInfoItem(scrapy.Item):
