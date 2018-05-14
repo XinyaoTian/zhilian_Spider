@@ -5,6 +5,7 @@ import scrapy
 import re
 
 import time
+import sys
 
 import logging
 logging.basicConfig(level = logging.INFO)
@@ -15,6 +16,10 @@ from zhilian_Spider.items import JobInfoItem
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.conf import settings
 from urlparse import urljoin
+
+# 由于python中的string是以ascii编码的,所以在这里要手动转换为utf-8,这样utf-8才可以使用unicode函数解码~
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class OverviewSpider(CrawlSpider):
 
@@ -46,7 +51,7 @@ class OverviewSpider(CrawlSpider):
     allowed_domains = ["zhaopin.com"]
 
     start_urls = [
-        'https://sou.zhaopin.com/jobs/searchresult.ashx?bj=160000&sj=2041&jl=%E5%8C%97%E4%BA%AC&kw=hadoop&p=1&isadv=0'
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E5%A4%A9%E6%B4%A5&kw=%E6%95%B0%E6%8D%AE&isadv=0&ispts=1&isfilter=1&p=1'
     ]
 
     cookie = settings['COOKIE']
@@ -129,7 +134,7 @@ class OverviewSpider(CrawlSpider):
 
             # yield infoItem
 
-            yield scrapy.Request(url=job_url,callback=self.parse_specific_info,meta=meta_job)
+            yield scrapy.Request(url=job_url,callback=self.parse_specific_info,meta=meta_job, encoding='utf-8')
 
     def parse_specific_info(self,response):
         infoItem = JobInfoItem()
@@ -155,11 +160,25 @@ class OverviewSpider(CrawlSpider):
             #公司信息
             infoItem['company_name'] = item.xpath('.//div[@class="company-box"]/p[@class="company-name-t"]/a/text()').extract_first()
 
-            infoItem['company_scale'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[1]/strong/text()').extract_first()
-            infoItem['company_nature'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[2]/strong/text()').extract_first()
-            infoItem['company_industrial'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[3]/strong/a/text()').extract_first()
-            infoItem['company_webpage'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[4]/strong/a/@href').extract_first()
-            infoItem['company_address'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[5]/strong/text()').extract_first()
+            for detail in item.xpath('.//div[@class="company-box"]/ul[1]/li'):
+                subtitle = detail.xpath('.//span/text()').extract_first()
+                # subtitle.encode('utf-8')
+                print subtitle
+                if subtitle ==  unicode('公司规模：'):
+                    infoItem['company_scale'] = detail.xpath('.//strong/text()').extract_first()
+                elif subtitle == '公司性质：':
+                    infoItem['company_nature'] = detail.xpath('.//strong/text()').extract_first()
+                elif subtitle == '公司行业：':
+                    infoItem['company_industrial'] = detail.xpath('.//strong/a/text()').extract_first()
+                elif subtitle == '公司主页：':
+                    infoItem['company_webpage'] = detail.xpath('.//strong/a/@href').extract_first()
+                elif subtitle == '公司地址：':
+                    infoItem['company_address'] = detail.xpath('.//strong/text()').extract_first()
+            # infoItem['company_scale'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[1]/strong/text()').extract_first()
+            # infoItem['company_nature'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[2]/strong/text()').extract_first()
+            # infoItem['company_industrial'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[3]/strong/a/text()').extract_first()
+            # infoItem['company_webpage'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[4]/strong/a/@href').extract_first()
+            # infoItem['company_address'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[5]/strong/text()').extract_first()
 
             infoItem['feedback_rate'] = response.meta['feedback_rate']
 
