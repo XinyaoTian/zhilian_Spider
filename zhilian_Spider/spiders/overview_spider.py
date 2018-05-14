@@ -10,8 +10,10 @@ import sys
 import logging
 logging.basicConfig(level = logging.INFO)
 
-from zhilian_Spider.items import OverviewItem
 from zhilian_Spider.items import JobInfoItem
+
+from func_pack import get_current_day
+from func_pack import get_current_time
 
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.conf import settings
@@ -114,18 +116,18 @@ class OverviewSpider(CrawlSpider):
                 'feedback_rate': None  # 这个变量是用来传递上一个页面中的信息的
             }
 
-            infoItem = OverviewItem()
-            infoItem['job_name'] = item.xpath('.//td[1]/div[1]/a[1]/text()').extract_first()
+            # infoItem = OverviewItem()
+            # infoItem['job_name'] = item.xpath('.//td[1]/div[1]/a[1]/text()').extract_first()
             job_url = item.xpath('.//td[1]/div[1]/a[1]/@href').extract_first()
-            infoItem['job_url'] = job_url
+            # infoItem['job_url'] = job_url
             job_url = str(job_url)
             # 这里一定要使用urljoin函数，不然是爬不到相应的url的
             job_url = urljoin(response.url,job_url)
 
             # logging.info("url_type: " + str(type(job_url)) + "  url: " + str(job_url))
-            infoItem['feedback_rate'] = item.xpath('.//td[2]/span[1]/text()').extract_first()
+            # infoItem['feedback_rate'] = item.xpath('.//td[2]/span[1]/text()').extract_first()
 
-            meta_job['feedback_rate'] = infoItem['feedback_rate']
+            meta_job['feedback_rate'] = item.xpath('.//td[2]/span[1]/text()').extract_first()
             # infoItem['company_name'] = item.xpath('.//td[3]/a[1]/text()').extract_first()
             # infoItem['salary'] = item.xpath('.//td[4]/text()').extract_first()
             # infoItem['work_position'] = item.xpath('.//td[5]/text()').extract_first()
@@ -145,7 +147,6 @@ class OverviewSpider(CrawlSpider):
 
             #url信息
             infoItem['job_url'] = response.url
-            # To Do: add xpath().extract_first()
 
             # 职位信息
             infoItem['salary'] = item.xpath('.//div[1]/ul[1]/li[1]/strong/text()').extract_first()
@@ -163,7 +164,6 @@ class OverviewSpider(CrawlSpider):
             for detail in item.xpath('.//div[@class="company-box"]/ul[1]/li'):
                 subtitle = detail.xpath('.//span/text()').extract_first()
                 # subtitle.encode('utf-8')
-                print subtitle
                 if subtitle ==  unicode('公司规模：'):
                     infoItem['company_scale'] = detail.xpath('.//strong/text()').extract_first()
                 elif subtitle == '公司性质：':
@@ -180,7 +180,9 @@ class OverviewSpider(CrawlSpider):
             # infoItem['company_webpage'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[4]/strong/a/@href').extract_first()
             # infoItem['company_address'] = item.xpath('.//div[@class="company-box"]/ul[1]/li[5]/strong/text()').extract_first()
 
+            # 利用meta传递从之前页面爬取到的简历反馈率
             infoItem['feedback_rate'] = response.meta['feedback_rate']
+            infoItem['scrape_time'] = get_current_day() + "_" + get_current_time()
 
 
             yield infoItem
