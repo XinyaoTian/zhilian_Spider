@@ -41,7 +41,7 @@ class overview_JsonWithEncodingPipeline(object):
 #此管道处理函数 用于处理 overview_spider.py 中 的爬虫数据
 class jobInfo_JsonWithEncodingPipeline(object):
     def __init__(self):
-        fname = "jobInfo_" + get_current_day()
+        fname = "jobInfo_" + get_current_day() + ".json"
         self.file = codecs.open(fname, 'w', encoding='utf-8')
         self.file.write('[')
         #print "Open the spider pipeline"
