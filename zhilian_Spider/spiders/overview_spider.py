@@ -35,12 +35,12 @@ class OverviewSpider(CrawlSpider):
 
     headers = {
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "Accept - Encoding":"gzip, deflate",
+        "Accept - Encoding":"gzip, deflate , br",
         "Accept - Language":"zh-CN,zh;q=0.9,en;q=0.8",
         "Cache - Control":"max-age=0",
         "Connection":"keep-alive",
         "Host": "sou.zhaopin.com",
-        "Referer":" http: // bj.lianjia.com /?utm_source = baidu & utm_medium = pinzhuan & utm_term = biaoti & utm_content = biaotimiaoshu & utm_campaign = sousuo & ljref = pc_sem_baidu_ppzq_x",
+        # "Referer":" http: // bj.lianjia.com /?utm_source = baidu & utm_medium = pinzhuan & utm_term = biaoti & utm_content = biaotimiaoshu & utm_campaign = sousuo & ljref = pc_sem_baidu_ppzq_x",
         "Upgrade-Insecure-Requests":"1",
         "User - Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36"
     }
@@ -53,7 +53,7 @@ class OverviewSpider(CrawlSpider):
     allowed_domains = ["zhaopin.com"]
 
     start_urls = [
-        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E5%A4%A9%E6%B4%A5&kw=%E6%95%B0%E6%8D%AE&isadv=0&ispts=1&isfilter=1&p=1'
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%3B%E4%B8%8A%E6%B5%B7%3B%E5%B9%BF%E5%B7%9E%3B%E6%B7%B1%E5%9C%B3%3B%E5%A4%A9%E6%B4%A5&kw=%E5%A4%A7%E6%95%B0%E6%8D%AE&sm=0&isadv=0&isfilter=1&p=1'
     ]
 
     cookie = settings['COOKIE']
@@ -75,12 +75,15 @@ class OverviewSpider(CrawlSpider):
         # 这里需要计算出该求职信息共有多少页，便于爬虫的翻页
         jobs_per_page = len(response.xpath('//table[@class="newlist"]'))
         jobs_total = int(response.xpath('/html/body/div[3]/div[3]/div[2]/span[1]/em/text()').extract_first())
+        print "***************" + str(jobs_total) + "***************"
 
         # 计算总页数
         if jobs_total%jobs_per_page is not 0:
             full_page = jobs_total // jobs_per_page + 1
         else:
             full_page = jobs_total // jobs_per_page
+
+        print "***************"+ str(full_page) + "***************"
 
         # 设置当前页数，并通过循环 利用scrapy.Request函数依次对后续页数发起请求
         # 并用自己编写的parse_house_info函数对新抓取到的页面进行信息搜集
@@ -102,6 +105,7 @@ class OverviewSpider(CrawlSpider):
             # logging.info("headers : " + str(response.headers))
             # logging.info("Current page(" + str(part_url) + ") : " + str(cur_page) + "/" + str(full_page))
             meta['current_page_num'] = part_url
+            # print part_url
             yield scrapy.Request(url_to_request,callback=self.parse_job_info,method= 'GET',headers = self.headers ,
                                  meta=meta, cookies=self.cookie, encoding='utf-8')
             cur_page += 1
@@ -136,7 +140,8 @@ class OverviewSpider(CrawlSpider):
 
             # yield infoItem
 
-            yield scrapy.Request(url=job_url,callback=self.parse_specific_info,meta=meta_job, encoding='utf-8')
+            yield scrapy.Request(url=job_url,callback=self.parse_specific_info,
+                                 meta=meta_job, encoding='utf-8')
 
     def parse_specific_info(self,response):
         infoItem = JobInfoItem()
