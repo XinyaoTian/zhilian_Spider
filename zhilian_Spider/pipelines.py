@@ -5,6 +5,7 @@ import codecs
 import pymongo
 from scrapy.conf import settings
 import logging
+from pyhdfs import *
 
 from func_pack import get_current_day
 
@@ -12,6 +13,71 @@ from func_pack import get_current_day
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+
+class overview_WriteHdfsCsvPipeline(object):
+    def __init__(self):
+        # 利用IP+Port,连接集群上的Namenode
+        self.client = HdfsClient(hosts="47.93.45.238,9000", user_name="hadoop", timeout=5)
+        # 若存储数据的文件已经存在
+        if self.client.exists("/user/hadoop/jobInfo_zhilian.csv"):
+            logging.info("Open the file src='/user/hadoop/jobInfo_zhilian.csv'")
+            pass
+        else: #若存储数据的文件不存在
+            # 在hadoop集群上建立这个存储文件
+            self.client.mkdirs("/user/hadoop/jobInfo_zhilian.csv")
+            logging.info("Create the file path='/user/hadoop/jobInfo_zhilian.csv'")
+            # 初始化csv的目录结构
+            self.client.append("/user/hadoop/jobInfo_zhilian.csv",
+                          "job_url," +
+                          "job_name," +
+                          "salary," +
+                          "publish_date" +
+                          "work_experience," +
+                          "job_nature," +
+                          "education_degree," +
+                          "job_category," +
+                          "company_name," +
+                          "company_scale," +
+                          "company_nature," +
+                          "company_industrial," +
+                          "company_webpage," +
+                          "company_address," +
+                          "feedback_rate," +
+                           "scrape_time"
+                          )
+
+    def process_item(self, item ,spider):
+        self.client.append("/user/hadoop/jobInfo_zhilian.csv",
+                           item["job_url"] + "," +
+                           item["job_name"] + "," +
+                           item['salary'] + "," +
+                           item['publish_date'] + "," +
+                           item['work_experience'] + "," +
+                           item['job_nature'] + "," +
+                           item['education_degree'] + "," +
+                           item['job_category'] + "," +
+                           item['company_name'] + "," +
+                           item['company_scale'] + "," +
+                           item['company_nature'] + "," +
+                           item['company_industrial'] + "," +
+                           item['company_webpage'] + "," +
+                           item['company_address'] + "," +
+                           item['feedback_rate'] + "," +
+                           item['scrape_time']
+                           )
+        return item
+
+
+    # 要特别注意这两个函数名，因为框架需要调用 因此名字必须是open_spider 一点都不能错
+    def open_spider(self, spider):
+        pass
+        # print "Spider start!"
+
+    #同样 close_spider 的函数名也必须是这个，否则框架是无法识别的
+    def close_spider(self, spider):
+        pass
+        #print "Close the spider pipeline"
+
 
 
 #此管道处理函数 用于处理 distinct_spider.py 中 的爬虫数据

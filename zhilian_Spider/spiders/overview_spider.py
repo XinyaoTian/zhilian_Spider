@@ -52,8 +52,12 @@ class OverviewSpider(CrawlSpider):
 
     allowed_domains = ["zhaopin.com"]
 
+    # start_urls = [
+    #     'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%3B%E4%B8%8A%E6%B5%B7%3B%E5%B9%BF%E5%B7%9E%3B%E6%B7%B1%E5%9C%B3%3B%E5%A4%A9%E6%B4%A5&kw=%E5%A4%A7%E6%95%B0%E6%8D%AE&sm=0&isadv=0&isfilter=1&p=1'
+    # ]
+
     start_urls = [
-        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%3B%E4%B8%8A%E6%B5%B7%3B%E5%B9%BF%E5%B7%9E%3B%E6%B7%B1%E5%9C%B3%3B%E5%A4%A9%E6%B4%A5&kw=%E5%A4%A7%E6%95%B0%E6%8D%AE&sm=0&isadv=0&isfilter=1&p=1'
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E5%A4%A9%E6%B4%A5&kw=hadoop&isadv=0&isfilter=1&p=1&bj=300200'
     ]
 
     cookie = settings['COOKIE']
