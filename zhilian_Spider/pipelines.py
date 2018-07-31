@@ -14,20 +14,27 @@ from func_pack import get_current_day
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
-class overview_WriteHdfsCsvPipeline(object):
+class jobInfo_FeedExportLocalCsv(object):
+    pass
+
+
+# 在hdfs集群上以CSV格式存储数据
+class jobInfo_WriteHdfsCsvPipeline(object):
     def __init__(self):
         # 利用IP+Port,连接集群上的Namenode
         self.client = HdfsClient(hosts="47.93.45.238,9000", user_name="hadoop", timeout=5)
+        self.count = 0
         # 若存储数据的文件已经存在
         if self.client.exists("/user/hadoop/jobInfo_zhilian.csv"):
             logging.info("Open the file src='/user/hadoop/jobInfo_zhilian.csv'")
             pass
         else: #若存储数据的文件不存在
             # 在hadoop集群上建立这个存储文件
-            self.client.mkdirs("/user/hadoop/jobInfo_zhilian.csv")
+            self.client.create("/user/hadoop/jobInfo_zhilian.csv","")
             logging.info("Create the file path='/user/hadoop/jobInfo_zhilian.csv'")
             # 初始化csv的目录结构
             self.client.append("/user/hadoop/jobInfo_zhilian.csv",
+                          "," +
                           "job_url," +
                           "job_name," +
                           "salary," +
@@ -43,27 +50,29 @@ class overview_WriteHdfsCsvPipeline(object):
                           "company_webpage," +
                           "company_address," +
                           "feedback_rate," +
-                           "scrape_time"
+                           "scrape_time" + "\n"
                           )
 
     def process_item(self, item ,spider):
+        self.count += 1
         self.client.append("/user/hadoop/jobInfo_zhilian.csv",
-                           item["job_url"] + "," +
-                           item["job_name"] + "," +
-                           item['salary'] + "," +
-                           item['publish_date'] + "," +
-                           item['work_experience'] + "," +
-                           item['job_nature'] + "," +
-                           item['education_degree'] + "," +
-                           item['job_category'] + "," +
-                           item['company_name'] + "," +
-                           item['company_scale'] + "," +
-                           item['company_nature'] + "," +
-                           item['company_industrial'] + "," +
-                           item['company_webpage'] + "," +
-                           item['company_address'] + "," +
-                           item['feedback_rate'] + "," +
-                           item['scrape_time']
+                           str(self.count) + "," +
+                           str(item["job_url"]) + "," +
+                           str(item["job_name"]) + "," +
+                           str(item['salary']) + "," +
+                           str(item['publish_date']) + "," +
+                           str(item['work_experience']) + "," +
+                           str(item['job_nature']) + "," +
+                           str(item['education_degree']) + "," +
+                           str(item['job_category']) + "," +
+                           str(item['company_name']) + "," +
+                           str(item['company_scale']) + "," +
+                           str(item['company_nature']) + "," +
+                           str(item['company_industrial']) + "," +
+                           str(item['company_webpage']) + "," +
+                           str(item['company_address']) + "," +
+                           str(item['feedback_rate']) + "," +
+                           str(item['scrape_time']) + "\n"
                            )
         return item
 

@@ -29,7 +29,7 @@ class OverviewSpider(CrawlSpider):
 
     custom_settings = {
         'ITEM_PIPELINES':{
-            'zhilian_Spider.pipelines.jobInfo_JsonWithEncodingPipeline':300
+            'zhilian_Spider.pipelines.jobInfo_WriteHdfsCsvPipeline':300
         }
     }
 
