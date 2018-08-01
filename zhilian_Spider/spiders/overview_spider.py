@@ -29,7 +29,8 @@ class OverviewSpider(CrawlSpider):
 
     custom_settings = {
         'ITEM_PIPELINES':{
-            'zhilian_Spider.pipelines.jobInfo_WriteHdfsCsvPipeline':300
+            'zhilian_Spider.pipelines.jobInfo_JsonWithEncodingPipeline':300, # 将每日的数据存入./data文件夹
+            'zhilian_Spider.pipelines.jobToday_JsonWithEncodingPipeline':301 # 存入./文件夹，浏览今日数据
         }
     }
 
@@ -57,7 +58,15 @@ class OverviewSpider(CrawlSpider):
     # ]
 
     start_urls = [
-        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E5%A4%A9%E6%B4%A5&kw=hadoop&isadv=0&isfilter=1&p=1&bj=300200'
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=160000',
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=4010200',
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=200500',
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=4000000',
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=7001000',
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=3010000',
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=5002000',
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=160400',
+        'https://sou.zhaopin.com/jobs/searchresult.ashx?jl=%E5%8C%97%E4%BA%AC%2B%E4%B8%8A%E6%B5%B7%2B%E5%B9%BF%E5%B7%9E%2B%E6%B7%B1%E5%9C%B3%2B%E6%88%90%E9%83%BD&kw=it&isadv=0&isfilter=1&p=1&bj=4082000'
     ]
 
     cookie = settings['COOKIE']

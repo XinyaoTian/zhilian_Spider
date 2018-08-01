@@ -19,6 +19,7 @@ class jobInfo_FeedExportLocalCsv(object):
 
 
 # 在hdfs集群上以CSV格式存储数据
+# 由于频繁的发起hdfs连接请求，因此经常出现丢包情况，故放弃使用这个函数
 class jobInfo_WriteHdfsCsvPipeline(object):
     def __init__(self):
         # 利用IP+Port,连接集群上的Namenode
@@ -90,9 +91,9 @@ class jobInfo_WriteHdfsCsvPipeline(object):
 
 
 #此管道处理函数 用于处理 distinct_spider.py 中 的爬虫数据
-class overview_JsonWithEncodingPipeline(object):
+class jobToday_JsonWithEncodingPipeline(object):
     def __init__(self):
-        self.file = codecs.open('overview.json', 'w', encoding='utf-8')
+        self.file = codecs.open('./jobInfo_today.json', 'w', encoding='utf-8')
         self.file.write('[')
         #print "Open the spider pipeline"
 
@@ -116,7 +117,7 @@ class overview_JsonWithEncodingPipeline(object):
 #此管道处理函数 用于处理 overview_spider.py 中 的爬虫数据
 class jobInfo_JsonWithEncodingPipeline(object):
     def __init__(self):
-        fname = "jobInfo_" + get_current_day() + ".json"
+        fname = "./data/jobInfo_" + get_current_day() + ".json"
         self.file = codecs.open(fname, 'w', encoding='utf-8')
         self.file.write('[')
         #print "Open the spider pipeline"

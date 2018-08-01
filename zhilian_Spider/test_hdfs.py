@@ -1,7 +1,9 @@
 # -*- encoding:utf-8 -*-
 from pyhdfs import *
+from func_pack import get_current_day
 import requests
 
+print "jobInfo_" + get_current_day()
 
 client = HdfsClient(hosts="47.93.45.238,9000",user_name="hadoop",timeout=5)
 print client.get_home_directory()
@@ -15,7 +17,7 @@ print client.get_active_namenode()
 # # 查询
 print client.listdir("/user/hadoop")
 
-client.append("/user/hadoop/speech_text.txt","\n hello! there's a new message!\n")
+# client.append("/user/hadoop/speech_text.txt","\n hello! there's a new message!\n")
 
 # 从本地上传文件至集群
 # ToDo 部署后注意要配置Ubuntu中 /etc/hosts 中的IP地址到主机名的映射

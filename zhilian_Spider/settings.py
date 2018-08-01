@@ -22,8 +22,8 @@ NEWSPIDER_MODULE = 'zhilian_Spider.spiders'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
-# 设置等待时间
-DOWNLOAD_DELAY = 1.6
+# 设置爬取两个页面之间的等待时间
+DOWNLOAD_DELAY = 3
 
 #-----2018-3-21------
 MONGO_HOST = "127.0.0.1"  # 主机IP
